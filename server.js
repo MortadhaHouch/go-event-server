@@ -7,6 +7,7 @@ const userRouter = require("./controllers/userController");
 const eventRouter = require("./controllers/eventController");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const notificationRouter = require("./controllers/notificationController");
 // app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
@@ -16,6 +17,7 @@ connectToDB()
 const PORT = process.env.PORT || 3000;
 app.use("/user",userRouter);
 app.use("/event",eventRouter);
+app.use("/notification",notificationRouter);
 app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`);
 })
