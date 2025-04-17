@@ -1,6 +1,6 @@
 const {Schema, model} = require("mongoose");
 const bcrypt = require("bcrypt");
-const userSchema = new Schema({
+const adminSchema = new Schema({
     _firstName:{
         type:String,
         required:true,
@@ -44,14 +44,6 @@ const userSchema = new Schema({
         type:[String],
         required:true,
     },
-    _followers:{
-        type:[Schema.Types.ObjectId],
-        ref:"User",
-    },
-    _following:{
-        type:[Schema.Types.ObjectId],
-        ref:"User",
-    },
     _profilePicture:{
         type:String,
         required:false,
@@ -65,15 +57,11 @@ const userSchema = new Schema({
             },
             message: props => `${props.value} is not a valid email!`
         }
-    },
-    _isLocked :{
-        type:Boolean,
-        default:false
     }
 },{
     timestamps:true,
 });
-userSchema.pre("save",async function(next){
+adminSchema.pre("save",async function(next){
     try {
         if(this.isModified("_password")||this.isNew){
             const salt = await bcrypt.genSalt(10);
@@ -86,4 +74,4 @@ userSchema.pre("save",async function(next){
         next(error);
     }
 })
-module.exports = model("User",userSchema);
+module.exports = model("Admin",adminSchema);

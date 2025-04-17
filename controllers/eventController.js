@@ -89,6 +89,30 @@ eventRouter.get("/by-id/:_id",checkUser,async(req,res)=>{
         res.status(500).json({ message: "Error fetching event" });
     }
 })
+eventRouter.get("/filter",async(req,res)=>{
+    try {
+        const {_title,_description,_startDate,_endDate,_location,_price,_availableSeats,_isTicketed,_startTime,_endTime,_duration,_category,_status} = req.query;
+        const filterCriteria = {};
+        if (_title) filterCriteria._title = new RegExp(_title, 'i');
+        if (_description) filterCriteria._description = new RegExp(_description, 'i');
+        if (_startDate) filterCriteria._startDate = { $gte: new Date(_startDate) };
+        if (_endDate) filterCriteria._endDate = { $lte: new Date(_endDate) };
+        if (_location) filterCriteria._location = new RegExp(_location, 'i');
+        if (_price) filterCriteria._price = _price;
+        if (_availableSeats) filterCriteria._availableSeats = { $gte: _availableSeats };
+        if (_isTicketed) filterCriteria._isTicketed = _isTicketed;
+        if (_startTime) filterCriteria._startTime = { $gte: new Date(_startTime) };
+        if (_endTime) filterCriteria._endTime = { $lte: new Date(_endTime) };
+        if (_duration) filterCriteria._duration = _duration;
+        if (_category) filterCriteria._category = _category;
+        if (_status) filterCriteria._status = _status;
+        const events = await Event.find(filterCriteria);
+        res.status(200).json(events);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Error fetching events" });
+    }
+})
 eventRouter.post("/create",checkUser,async(req,res)=>{
     try {
         if(req.user){
@@ -200,6 +224,7 @@ eventRouter.post("/join/:_id",checkUser,async(req,res)=>{
         if(req.user){
             const {_id} = req.params;
             const event = await Event.findById(_id);
+            const user = await User.findById(req.user._id);
             if(!event){
                 return res.status(404).json({ message: "Event not found" });
             }
@@ -217,6 +242,9 @@ eventRouter.post("/join/:_id",checkUser,async(req,res)=>{
             }
             if(event._availableSeats < 1){
                 return res.status(400).json({ message: "No available seats" });
+            }
+            if(user._isLocked){
+                return res.status(400).json({ message: "Your account is locked" });
             }
             const reuqest = await Request.create({
                 _event:_id,
